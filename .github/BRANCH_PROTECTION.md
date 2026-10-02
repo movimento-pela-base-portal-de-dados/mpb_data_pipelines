@@ -9,7 +9,7 @@ Aplicar uma ruleset de branch direcionada a `main` com:
 - branch atualizada com `main` antes do merge (`strict status checks`);
 - bloqueio de force push e de deleção da branch;
 - nenhuma exceção permanente para push direto;
-- revisão por CODEOWNERS somente depois que `.github/CODEOWNERS` possuir owners reais.
+- revisão obrigatória pelos owners reais definidos em `.github/CODEOWNERS`.
 
 A ruleset depende de permissão administrativa no GitHub e deve ser conferida
 em **Settings → Rules → Rulesets** após sua aplicação.
