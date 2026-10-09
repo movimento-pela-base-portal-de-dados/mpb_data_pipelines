@@ -19,6 +19,21 @@ A aplicação CKAN possui ciclo de vida independente. Este repositório não dev
 - `mpb-infra`: infraestrutura AWS/Terraform.
 - `mpb-ckan`: aplicação e API CKAN.
 
+## Início rápido
+
+Requer Python 3.11+ e [uv](https://docs.astral.sh/uv/).
+
+```bash
+uv sync                      # cria .venv com dependências de desenvolvimento
+uv run pre-commit install    # instala os hooks de commit e push
+```
+
+Os hooks executam o Ruff (lint e formatação):
+- `git commit`: corrige os arquivos em stage. Se algo mudar, o commit é bloqueado; revise, faça `git add` e repita.
+- `git push`: verifica o repositório inteiro, como o check `Python lint` do CI.
+
+Para executar manualmente: `uv run pre-commit run --all-files`.
+
 ## Preparação de engenharia
 
 O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
