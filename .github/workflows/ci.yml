@@ -19,18 +19,16 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.11'
-          cache: pip
+          enable-cache: true
       - name: Install development dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e '.[dev]'
+        run: uv sync --locked
       - name: Ruff lint
-        run: ruff check .
+        run: uv run ruff check .
       - name: Ruff format check
-        run: ruff format --check .
+        run: uv run ruff format --check .
 
   tests:
     name: Python tests and imports
@@ -38,19 +36,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@v6
         with:
           python-version: '3.11'
-          cache: pip
+          enable-cache: true
       - name: Install project and development dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e '.[dev]'
-      - name: Verify installed dependencies
-        run: python -m pip check
+        run: uv sync --locked
       - name: Verify package import and bytecode compilation
         run: |
-          python -c 'import mpb_data_pipelines'
-          python -m compileall -q src
+          uv run python -c 'import mpb_data_pipelines'
+          uv run python -m compileall -q src
       - name: Run unit tests
-        run: pytest -q
+        run: uv run pytest -q
