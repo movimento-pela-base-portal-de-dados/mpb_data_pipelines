@@ -18,3 +18,11 @@ A aplicação CKAN possui ciclo de vida independente. Este repositório não dev
 ## Repositórios relacionados
 - `mpb-infra`: infraestrutura AWS/Terraform.
 - `mpb-ckan`: aplicação e API CKAN.
+
+## Preparação de engenharia
+
+O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
+`CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates.
+
+Prefect é o padrão futuro de orquestração adotado pela Base dos Dados, conforme
+`docs/ORCHESTRATION.md`. Ele não é instalado nem configurado nesta etapa.
