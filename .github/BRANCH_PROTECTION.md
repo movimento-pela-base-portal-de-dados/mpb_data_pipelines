@@ -1,9 +1,9 @@
-# Proteção recomendada para `main` e `dev`
+# Proteção recomendada para `main` e `staging`
 
-O repositório tem duas branches permanentes: `dev` (integração) e `main`
+O repositório tem duas branches permanentes: `staging` (integração) e `main`
 (produção). Aplicar uma ruleset para cada uma.
 
-## Regras comuns a `main` e `dev`
+## Regras comuns a `main` e `staging`
 
 - Pull Request obrigatório, com uma aprovação de qualquer pessoa com acesso de
   escrita;
@@ -22,7 +22,7 @@ Assim, uma única aprovação de qualquer revisor é suficiente.
 
 ## Regra adicional para `main`
 
-- check obrigatório `Source branch policy`: o PR para `main` deve vir de `dev`.
+- check obrigatório `Source branch policy`: o PR para `main` deve vir de `staging`.
 
 Os nomes dos checks levam o prefixo `checks /` porque os jobs vêm do workflow
 reutilizável `.github/workflows/_checks.yml`.

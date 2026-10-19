@@ -2,7 +2,7 @@ name: Pull request
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [staging, main]
 
 permissions:
   contents: read
@@ -18,20 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Only dev can open a pull request into main
+      - name: Only staging can open a pull request into main
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [ "$HEAD_REF" != "dev" ]; then
-            echo "::error::Pull requests into main must come from dev (got '$HEAD_REF')."
+          if [ "$HEAD_REF" != "staging" ]; then
+            echo "::error::Pull requests into main must come from staging (got '$HEAD_REF')."
             exit 1
           fi
 
   checks:
-    # id-token: write é repassado ao job Image (OIDC para o ECR).
-    permissions:
-      contents: read
-      id-token: write
     # id-token: write é repassado ao job Image (OIDC para o ECR).
     permissions:
       contents: read

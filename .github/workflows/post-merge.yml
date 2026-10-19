@@ -2,7 +2,7 @@ name: Post merge
 
 on:
   push:
-    branches: [dev, main]
+    branches: [staging, main]
 
 permissions:
   contents: read
@@ -17,10 +17,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    # id-token: write é repassado ao job Image (OIDC para o ECR).
-    permissions:
-      contents: read
-      id-token: write
     uses: ./.github/workflows/_checks.yml
 
   deploy:
@@ -28,7 +24,7 @@ jobs:
     needs: checks
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -39,7 +35,7 @@ jobs:
       # TODO: substituir pelo deploy real quando o destino existir (ver docs/ORCHESTRATION.md).
       - name: Deploy placeholder
         env:
-          TARGET_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+          TARGET_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
         run: |
           {
             echo "## Deploy (placeholder)"
