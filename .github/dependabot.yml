@@ -2,7 +2,7 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
-    target-branch: dev
+    target-branch: staging
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
@@ -11,7 +11,7 @@ updates:
         patterns: ["*"]
   - package-ecosystem: uv
     directory: /
-    target-branch: dev
+    target-branch: staging
     schedule:
       interval: weekly
     open-pull-requests-limit: 5

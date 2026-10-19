@@ -5,6 +5,7 @@ ORCH_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 MPB_ENV_FILE=${MPB_ENV_FILE:-$ORCH_DIR/.env}
 PREFECT_NETWORK=mpb-prefect
 PREFECT_INTERNAL_API_URL=http://prefect-server:4200/api
+WORK_POOL=mpb-docker
 
 env_value() {
     grep -E "^$1=" "$MPB_ENV_FILE" | tail -n 1 | cut -d= -f2-

@@ -37,8 +37,8 @@ Para executar manualmente: `uv run pre-commit run --all-files`.
 
 ## Preparação de engenharia
 
-O desenvolvimento segue branches curtas com Pull Requests para `dev`. A
-promoção para produção é um Pull Request de `dev` para `main`. Consulte
+O desenvolvimento segue branches curtas com Pull Requests para `staging`. A
+promoção para produção é um Pull Request de `staging` para `main`. Consulte
 `CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates e o
 fluxo de CI/CD.
 
