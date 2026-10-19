@@ -30,15 +30,36 @@ nenhum destino.
 
 ## Validação local
 
-Use Python 3.11 ou superior e [uv](https://docs.astral.sh/uv/):
+Use [uv](https://docs.astral.sh/uv/). O arquivo `.python-version` fixa o Python
+3.11, a mesma versão do CI e das imagens Docker, e o uv baixa essa versão
+automaticamente. Não use uma versão mais nova: o Python 3.15 não tem wheel do
+`ruamel-yaml-clib`, e no Windows o `uv sync` falha pedindo o Microsoft C++ Build Tools.
+
+Os comandos abaixo repetem os checks do CI (`.github/workflows/_checks.yml`):
 
 ```bash
-uv sync
+uv sync --locked
 uv run pre-commit install
-uv run pre-commit run --all-files
+uv run ruff check .
+uv run ruff format --check .
 uv run python -c 'import mpb_data_pipelines'
+uv run python -m compileall -q src
 uv run pytest -q
 ```
+
+O teste de integração do orquestrador exige Docker e Bash (no Windows, use o
+Git Bash ou o WSL):
+
+```bash
+docker build -t mpb-flows:local .
+orchestrator/bin/integration-test.sh mpb-flows:local
+```
+
+Ele sobe uma stack Prefect descartável, registra os deployments, executa o flow
+`healthcheck` e remove a stack (veja `orchestrator/README.md`).
+
+As constantes de cada pacote ficam no `constants.py` do próprio diretório
+(veja `CLAUDE.md`).
 
 `pre-commit install` instala dois hooks Git. No `git commit`, o Ruff corrige e
 formata os arquivos em stage; se houver mudança, o commit é bloqueado para
@@ -49,7 +70,10 @@ no Pull Request.
 Novas dependências entram com `uv add` (ou `uv add --dev`); o `uv.lock` é
 versionado e o CI falha se ele estiver desatualizado.
 
-O CI não usa credenciais AWS, fontes reais ou serviços de orquestração.
+O CI não usa fontes reais nem credenciais AWS estáticas. PRs do próprio
+repositório assumem por OIDC uma role que apenas envia a imagem dos flows ao
+ECR. O teste de integração sobe uma stack Prefect local e descartável. O deploy
+ocorre no merge para `main`, pelo workflow `CD` (veja `docs/adr/0002-ci-cd.md`).
 Segredos, `.env` e dados sensíveis nunca são versionados. Mudanças de schema e
 contratos devem ser explícitas no PR; mudanças em decisões arquiteturais
 existentes exigem ADR.
