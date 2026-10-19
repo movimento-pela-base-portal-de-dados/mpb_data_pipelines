@@ -49,7 +49,10 @@ no Pull Request.
 Novas dependências entram com `uv add` (ou `uv add --dev`); o `uv.lock` é
 versionado e o CI falha se ele estiver desatualizado.
 
-O CI não usa credenciais AWS, fontes reais ou serviços de orquestração.
+O CI não usa fontes reais nem credenciais AWS estáticas. PRs do próprio
+repositório assumem por OIDC uma role que apenas envia a imagem dos flows ao
+ECR. O teste de integração sobe uma stack Prefect local e descartável. O deploy
+ocorre no merge para `main`, pelo workflow `CD` (veja `docs/adr/0002-ci-cd.md`).
 Segredos, `.env` e dados sensíveis nunca são versionados. Mudanças de schema e
 contratos devem ser explícitas no PR; mudanças em decisões arquiteturais
 existentes exigem ADR.

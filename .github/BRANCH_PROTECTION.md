@@ -9,8 +9,8 @@ O repositório tem duas branches permanentes: `dev` (integração) e `main`
   escrita;
 - conversas resolvidas antes do merge;
 - aprovação anterior descartada quando novos commits alterarem o PR;
-- checks obrigatórios `checks / Python lint`, `checks / Python tests and imports`
-  e `checks / Python build`;
+- checks obrigatórios `checks / Python lint`, `checks / Python tests and imports`,
+  `checks / Python build` e `checks / Image / Image build and integration`;
 - branch atualizada com a base antes do merge (`strict status checks`);
 - bloqueio de force push e de deleção da branch;
 - nenhuma exceção permanente para push direto.

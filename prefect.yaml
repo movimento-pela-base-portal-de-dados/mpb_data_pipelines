@@ -1,0 +1,31 @@
+# Deployments do orquestrador. O CI gera a imagem; este arquivo só registra os
+# deployments (orchestrator/bin/register.sh). Veja orchestrator/README.md.
+name: mpb-data-pipelines
+prefect-version: 3.8.8
+
+build: null
+push: null
+
+pull:
+  - prefect.deployments.steps.set_working_directory:
+      directory: /opt/prefect/mpb-data-pipelines
+
+definitions:
+  work_pools:
+    docker: &docker_pool
+      name: mpb-docker
+      job_variables:
+        # Tag imutável (tree-<hash>), definida pelo CI/CD.
+        image: "{{ $MPB_FLOW_IMAGE }}"
+        image_pull_policy: IfNotPresent
+        # O container do flow run precisa alcançar http://prefect-server:4200/api.
+        networks: [mpb-prefect]
+        auto_remove: true
+
+deployments:
+  - name: healthcheck
+    description: Flow mínimo das verificações antes e depois do deploy.
+    entrypoint: src/mpb_data_pipelines/flows/healthcheck.py:healthcheck
+    version: "{{ $MPB_VERSION }}"
+    parameters: {}
+    work_pool: *docker_pool
