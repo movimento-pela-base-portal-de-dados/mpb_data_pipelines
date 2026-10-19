@@ -14,8 +14,14 @@ from prefect.client.schemas.filters import DeploymentFilter, DeploymentFilterNam
 from prefect.client.schemas.objects import WorkPoolStatus
 from prefect.deployments import run_deployment
 
-WORK_POOL = "mpb-docker"
-HEALTHCHECK_DEPLOYMENT = "healthcheck/healthcheck"
+from mpb_data_pipelines.ops.constants import (
+    DEFAULT_PREFECT_FILE,
+    DEFAULT_RUN_TIMEOUT_SECONDS,
+    DEFAULT_WORKER_WAIT_SECONDS,
+    HEALTHCHECK_DEPLOYMENT,
+    WORK_POOL,
+    WORK_POOL_POLL_INTERVAL_SECONDS,
+)
 
 
 class CheckError(Exception):
@@ -41,7 +47,7 @@ def check_work_pool(client, wait_seconds: float) -> None:
             return
         if time.monotonic() >= deadline:
             raise CheckError(f"work pool {WORK_POOL} sem worker online (status: {status})")
-        time.sleep(5)
+        time.sleep(WORK_POOL_POLL_INTERVAL_SECONDS)
 
 
 def check_deployments(client, names: set[str], image: str) -> None:
@@ -66,9 +72,9 @@ def check_healthcheck_run(timeout: float) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--image", required=True, help="imagem esperada nos deployments")
-    parser.add_argument("--prefect-file", type=Path, default=Path("prefect.yaml"))
-    parser.add_argument("--worker-wait", type=float, default=120)
-    parser.add_argument("--run-timeout", type=float, default=600)
+    parser.add_argument("--prefect-file", type=Path, default=Path(DEFAULT_PREFECT_FILE))
+    parser.add_argument("--worker-wait", type=float, default=DEFAULT_WORKER_WAIT_SECONDS)
+    parser.add_argument("--run-timeout", type=float, default=DEFAULT_RUN_TIMEOUT_SECONDS)
     args = parser.parse_args(argv)
 
     try:
