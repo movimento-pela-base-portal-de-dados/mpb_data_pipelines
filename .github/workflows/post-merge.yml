@@ -17,6 +17,10 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    # id-token: write é repassado ao job Image (OIDC para o ECR).
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/_checks.yml
 
   deploy:
