@@ -36,8 +36,10 @@ Para executar manualmente: `uv run pre-commit run --all-files`.
 
 ## Preparação de engenharia
 
-O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
-`CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates.
+O desenvolvimento segue branches curtas com Pull Requests para `dev`. A
+promoção para produção é um Pull Request de `dev` para `main`. Consulte
+`CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates e o
+fluxo de CI/CD.
 
 Prefect é o padrão futuro de orquestração adotado pela Base dos Dados, conforme
 `docs/ORCHESTRATION.md`. Ele não é instalado nem configurado nesta etapa.

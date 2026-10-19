@@ -1,14 +1,32 @@
 # Contribuição
 
-O repositório usa desenvolvimento baseado em `main`: a branch é protegida e
-toda mudança entra por Pull Request a partir de uma branch curta.
+O repositório tem duas branches permanentes e protegidas:
+
+- `dev`: integração. Recebe os Pull Requests das branches curtas.
+- `main`: produção. Recebe Pull Requests somente de `dev`.
+
+```
+feature/* fix/* chore/* docs/*  --PR-->  dev  --PR-->  main
+```
 
 ## Branches
 
-Use `feature/<descricao>`, `fix/<descricao>`, `chore/<descricao>` ou
-`docs/<descricao>`. Mantenha a branch pequena, atualize-a com `main` quando
-necessário e remova-a após o merge. Não há branches permanentes `develop` ou
-`release/*`.
+Crie a branch a partir de `dev` com `feature/<descricao>`, `fix/<descricao>`,
+`chore/<descricao>` ou `docs/<descricao>`. Abra o Pull Request para `dev`.
+Mantenha a branch pequena, atualize-a com `dev` quando necessário e remova-a
+após o merge. A promoção para produção é um Pull Request de `dev` para `main`.
+O check `Source branch policy` bloqueia PRs para `main` vindos de outra branch.
+
+## CI/CD
+
+- `.github/workflows/pull-request.yml`: em todo PR para `dev` ou `main`, executa
+  lint, testes e build do pacote (`.github/workflows/_checks.yml`).
+- `.github/workflows/post-merge.yml`: após o merge em `dev` ou `main`, executa
+  os checks no commit de merge, gera o build e faz o deploy desse artefato no
+  ambiente correspondente (`dev` ou `production`).
+
+Nesta etapa o deploy é um placeholder: ele recebe o artefato e não publica em
+nenhum destino.
 
 ## Validação local
 
