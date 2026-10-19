@@ -6,7 +6,8 @@ Aplicar uma ruleset de branch direcionada a `main` com:
   escrita;
 - conversas resolvidas antes do merge;
 - aprovação anterior descartada quando novos commits alterarem o PR;
-- checks obrigatórios `Python lint` e `Python tests and imports`;
+- checks obrigatórios `Python lint`, `Python tests and imports` e
+  `Image / Image build and integration`;
 - branch atualizada com `main` antes do merge (`strict status checks`);
 - bloqueio de force push e de deleção da branch;
 - nenhuma exceção permanente para push direto.

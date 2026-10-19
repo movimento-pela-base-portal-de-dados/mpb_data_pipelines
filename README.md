@@ -8,6 +8,7 @@ Fluxo esperado: fonte -> extração -> `S3/raw` -> validação/transformação -
 A aplicação CKAN possui ciclo de vida independente. Este repositório não deve conter infraestrutura AWS nem código da aplicação CKAN.
 
 ## Estrutura
+- `src/mpb_data_pipelines/flows`: flows e tasks Prefect (apenas orquestração).
 - `src/mpb_data_pipelines/connectors`: aquisição por API, arquivos, web e outras fontes.
 - `transforms`: limpeza, padronização e enriquecimento.
 - `quality`: regras e validações de qualidade.
@@ -39,5 +40,8 @@ Para executar manualmente: `uv run pre-commit run --all-files`.
 O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
 `CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates.
 
-Prefect é o padrão futuro de orquestração adotado pela Base dos Dados, conforme
-`docs/ORCHESTRATION.md`. Ele não é instalado nem configurado nesta etapa.
+## Orquestração
+
+As pipelines executam no Prefect 3 self-hosted, na EC2 do orquestrador, com um
+worker Docker. Consulte `docs/ORCHESTRATION.md` para a estrutura e
+`orchestrator/README.md` para a operação e o CI/CD. Ainda não há flows de dados implementados.

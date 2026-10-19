@@ -48,3 +48,19 @@ jobs:
           uv run python -m compileall -q src
       - name: Run unit tests
         run: uv run pytest -q
+
+  image:
+    name: Image
+    needs: [lint, tests]
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/image.yml
+    with:
+      # Só PRs do próprio repositório enviam ao ECR: forks e Dependabot não
+      # recebem token OIDC. Sem a role configurada, o push fica desativado.
+      push: >-
+        ${{ github.event.pull_request.head.repo.full_name == github.repository
+        && github.actor != 'dependabot[bot]' && vars.AWS_ROLE_CI_ARN != '' }}
+      aws-role-arn: ${{ vars.AWS_ROLE_CI_ARN }}
