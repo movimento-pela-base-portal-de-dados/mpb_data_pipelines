@@ -22,11 +22,11 @@ O check `Source branch policy` bloqueia PRs para `main` vindos de outra branch.
 - `.github/workflows/pull-request.yml`: em todo PR para `staging` ou `main`, executa
   lint, testes e build do pacote (`.github/workflows/_checks.yml`).
 - `.github/workflows/post-merge.yml`: após o merge em `staging` ou `main`, executa
-  os checks no commit de merge, gera o build e faz o deploy desse artefato no
-  ambiente correspondente (`staging` ou `production`).
-
-Nesta etapa o deploy é um placeholder: ele recebe o artefato e não publica em
-nenhum destino.
+  os checks no commit de merge e gera o build. Na `staging`, o deploy é um
+  placeholder: ele recebe o artefato e não publica em nenhum destino.
+- `.github/workflows/cd.yml`: após o merge na `main`, implanta na EC2 do
+  orquestrador a imagem testada no PR (`orchestrator/README.md` e
+  `docs/adr/0002-ci-cd.md`).
 
 ## Validação local
 

@@ -23,7 +23,7 @@ e `docs/adr/0002-ci-cd.md`.
 
 ## CI/CD
 
-1. **PR**: `Python lint`, `Python tests and imports` e `Image / Image build and integration`.
+1. **PR**: `checks / Python lint`, `checks / Python tests and imports` e `checks / Image / Image build and integration`.
    O último gera a imagem `tree-<hash>`, executa `bin/integration-test.sh` e envia a imagem ao ECR.
 2. **Merge na `main`**: o workflow `CD` encontra a imagem do PR no ECR e executa
    `bin/deploy.sh` na EC2 por SSM Run Command.

@@ -19,12 +19,14 @@ jobs:
       id-token: write
     uses: ./.github/workflows/_checks.yml
 
+  # Só na staging: na main, o deploy real é feito pelo cd.yml.
   deploy:
     name: Deploy
     needs: checks
+    if: github.ref_name == 'staging'
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+    environment: staging
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -34,13 +36,11 @@ jobs:
         run: ls -l dist/
       # TODO: substituir pelo deploy real quando o destino existir (ver docs/ORCHESTRATION.md).
       - name: Deploy placeholder
-        env:
-          TARGET_ENVIRONMENT: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
         run: |
           {
             echo "## Deploy (placeholder)"
             echo ""
-            echo "- Ambiente: \`$TARGET_ENVIRONMENT\`"
+            echo "- Ambiente: \`staging\`"
             echo "- Commit: \`$GITHUB_SHA\`"
             echo "- Artefatos:"
             for file in dist/*; do echo "  - \`$(basename "$file")\`"; done
