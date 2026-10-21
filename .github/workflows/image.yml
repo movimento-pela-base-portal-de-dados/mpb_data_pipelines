@@ -1,0 +1,69 @@
+name: Image
+
+# Gera a imagem dos flows com a tag tree-<hash da árvore git>, executa o teste
+# de integração e, se pedido, envia a imagem ao ECR. Chamado pelo CI e pelo CD.
+on:
+  workflow_call:
+    inputs:
+      push:
+        type: boolean
+        default: false
+      aws-role-arn:
+        type: string
+        default: ''
+      ref:
+        type: string
+        default: ''
+    outputs:
+      tag:
+        value: ${{ jobs.image.outputs.tag }}
+
+# Permissões herdadas do workflow chamador (id-token: write para o push).
+
+jobs:
+  image:
+    name: Image build and integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Compute image tag
+        id: tag
+        run: echo "tag=tree-$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v4
+      - name: Build flow-run image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: mpb-flows:${{ steps.tag.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Integration test
+        run: orchestrator/bin/integration-test.sh "mpb-flows:${{ steps.tag.outputs.tag }}"
+      - name: Configure AWS credentials
+        if: inputs.push
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ inputs.aws-role-arn }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Log in to ECR
+        if: inputs.push
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Push image to ECR
+        if: inputs.push
+        env:
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          if aws ecr describe-images --repository-name "${ECR_REPOSITORY#*/}" \
+              --image-ids imageTag="$TAG" > /dev/null 2>&1; then
+            echo "$ECR_REPOSITORY:$TAG já existe no ECR"
+            exit 0
+          fi
+          docker tag "mpb-flows:$TAG" "$ECR_REPOSITORY:$TAG"
+          docker push "$ECR_REPOSITORY:$TAG"
