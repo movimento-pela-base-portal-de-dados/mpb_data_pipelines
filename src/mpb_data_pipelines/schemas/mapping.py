@@ -33,6 +33,7 @@ class ColumnMapping:
     separators: tuple[str, ...] = ()
     choices: tuple[str, ...] = ()
     aliases: dict[str, tuple[str, ...]] = field(default_factory=dict)
+    access_roles: tuple[str, ...] = ()
     note: str | None = None
     reason: str | None = None
 
@@ -76,6 +77,7 @@ def _parse_column(raw: dict) -> ColumnMapping:
         separators=tuple(raw.get("separators") or ()),
         choices=tuple(choice["value"] for choice in raw.get("choices") or ()),
         aliases={alias: tuple(values) for alias, values in (raw.get("aliases") or {}).items()},
+        access_roles=tuple(raw.get("access_roles") or ()),
         note=raw.get("note"),
         reason=raw.get("reason"),
     )
@@ -88,6 +90,10 @@ def validate_mapping(mapping: SchemaMapping) -> None:
 
     targets: set[tuple[str, str | None, str | None]] = set()
     for c in mapping.columns:
+        if not all(isinstance(role, str) and role for role in c.access_roles):
+            raise MappingError(f"coluna {c.column}: access_roles aceita só nomes de cargo")
+        if len(set(c.access_roles)) != len(c.access_roles):
+            raise MappingError(f"coluna {c.column}: access_roles com cargo repetido")
         if c.target not in TARGETS:
             raise MappingError(f"coluna {c.column}: destino inválido {c.target!r}")
         if c.target == TARGET_IGNORE:
