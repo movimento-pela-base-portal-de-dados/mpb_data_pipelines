@@ -25,6 +25,8 @@ Os mapeamentos entre fontes e campos CKAN ficam em `src/mpb_data_pipelines/schem
 
 Cada `field_name` de destino `dataset` ou `resource` precisa existir no schema scheming do mpb-ckan. Uma mudança de campo exige mudança nos dois repositórios. `load_mapping` valida o arquivo: colunas sem repetição, choices dos aliases, recursos conhecidos e os campos que o mpb-ckan exige (`title`, `name`, `tag_string`, `owner_org`).
 
+Cada coluna aceita `access_roles`, a lista de cargos que podem acessar a coluna. Uma lista vazia não restringe o acesso.
+
 ## Contrato inicial de armazenamento
 - `raw/`: cópia recebida da fonte, preservada sem transformação semântica.
 - `processed/`: dados validados, padronizados e tratados.
