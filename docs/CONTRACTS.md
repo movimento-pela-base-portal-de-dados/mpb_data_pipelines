@@ -20,6 +20,13 @@ Para o CI/CD (veja `docs/adr/0002-ci-cd.md`), o mpb-infra fornece:
 ## Com mpb-ckan
 A publicação de catálogo ocorre pela API CKAN. O pipeline envia metadados e referências aos recursos publicados; não acopla aquisição e transformação ao processo da aplicação CKAN.
 
+Os mapeamentos entre fontes e campos CKAN ficam em `src/mpb_data_pipelines/schemas/`:
+- `pesquisa.yaml`: planilha de pesquisas (aba `Metadados`) para o tipo de dataset `pesquisa`.
+
+Cada `field_name` de destino `dataset` ou `resource` precisa existir no schema scheming do mpb-ckan. Uma mudança de campo exige mudança nos dois repositórios. `load_mapping` valida o arquivo: colunas sem repetição, choices dos aliases, recursos conhecidos e os campos que o mpb-ckan exige (`title`, `name`, `tag_string`, `owner_org`).
+
+Cada coluna aceita `access_roles`, a lista de cargos que podem acessar a coluna. Uma lista vazia não restringe o acesso.
+
 ## Contrato inicial de armazenamento
 - `raw/`: cópia recebida da fonte, preservada sem transformação semântica.
 - `processed/`: dados validados, padronizados e tratados.

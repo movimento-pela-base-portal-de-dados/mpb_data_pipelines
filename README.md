@@ -13,6 +13,7 @@ A aplicação CKAN possui ciclo de vida independente. Este repositório não dev
 - `transforms`: limpeza, padronização e enriquecimento.
 - `quality`: regras e validações de qualidade.
 - `publish`: publicação em S3 e integração com a API CKAN.
+- `schemas`: mapeamentos entre colunas das fontes e campos do schema CKAN.
 - `tests`: testes automatizados.
 - `docs`: contratos e decisões técnicas.
 

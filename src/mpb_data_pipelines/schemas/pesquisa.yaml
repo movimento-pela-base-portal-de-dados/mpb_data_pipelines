@@ -1,0 +1,278 @@
+# Mapeamento da planilha de pesquisas do MPB para o schema CKAN do tipo `pesquisa`.
+#
+# Fonte: aba `Metadados` da planilha de organização do observatório (cabeçalho na linha 1).
+# Contrato com o mpb-ckan: cada `field_name` de destino `dataset` ou `resource` precisa existir
+# no schema scheming do tipo `pesquisa`. `preset`, `choices` e `validators` seguem o formato do
+# ckanext-scheming.
+#
+# Destinos (`target`):
+# - `dataset`: campo do conjunto de dados.
+# - `resource`: campo do recurso indicado em `resource` (veja `resources` no fim do arquivo).
+# - `ignore`: coluna que não é publicada; `reason` diz por quê.
+#
+# `access_roles`: lista de cargos que podem acessar a coluna. Lista vazia: acesso sem restrição.
+
+dataset_type: pesquisa
+
+source:
+  sheet: Metadados
+  header_row: 1
+
+# Valores que a planilha usa para "sem valor" (resultado de VLOOKUP sem match ou marcação manual).
+null_values: ["0", "-", "N/a", "#N/A"]
+
+columns:
+  - column: A
+    header: Título da Pesquisa
+    target: dataset
+    field_name: title
+    preset: title
+    required: true
+    access_roles: []
+
+  - column: C
+    header: Tema
+    target: dataset
+    field_name: tema
+    preset: select
+    choices:
+      - value: conteudo_curricular
+        label: Conteúdo curricular
+      - value: implementacao
+        label: Implementação
+      - value: revisao_politica_curricular
+        label: Revisão de política curricular
+    access_roles: []
+
+  - column: D
+    header: Etapa
+    target: dataset
+    field_name: etapa
+    preset: multiple_select
+    separators: [","]
+    choices:
+      - value: educacao_infantil
+        label: Educação Infantil
+      - value: ensino_fundamental
+        label: Ensino Fundamental
+      - value: ensino_medio
+        label: Ensino Médio
+    aliases:
+      Todas: [educacao_infantil, ensino_fundamental, ensino_medio]
+      AF EF: [ensino_fundamental]
+      Educação Infantil e Ensino Fundamental: [educacao_infantil, ensino_fundamental]
+    access_roles: []
+
+  - column: E
+    header: Palavras chave
+    target: dataset
+    field_name: tag_string
+    preset: tag_string_autocomplete
+    required: true
+    separators: [",", ";", "//"]
+    note: Remover o prefixo `Palavras-chave:` que aparece depois de `//` em algumas linhas.
+    access_roles: []
+
+  - column: F
+    header: Tipo de estudo
+    target: dataset
+    field_name: tipo_estudo
+    preset: select
+    choices:
+      - value: analise
+        label: Análise
+      - value: artigo
+        label: Artigo
+      - value: benchmarking
+        label: Benchmarking
+      - value: boa_pratica
+        label: Boa Prática
+      - value: curso
+        label: Curso
+      - value: estudo_de_caso
+        label: Estudo de caso
+      - value: guia
+        label: Guia
+      - value: pesquisa
+        label: Pesquisa
+      - value: recomendacoes
+        label: Recomendações
+      - value: traducao
+        label: Tradução
+    access_roles: []
+
+  - column: G
+    header: Formato do arquivo
+    target: resource
+    resource: documento
+    field_name: format
+    preset: resource_format_autocomplete
+    access_roles: []
+
+  - column: H
+    header: Ano
+    target: dataset
+    field_name: ano
+    validators: ignore_missing int_validator
+    access_roles: []
+
+  - column: I
+    header: Observatório
+    target: dataset
+    field_name: observatorio
+    preset: radio
+    choices:
+      - value: sim
+        label: Sim
+      - value: nao
+        label: Não
+      - value: site_mpb
+        label: Site MPB
+    aliases:
+      Não?: [nao]
+    note: Confirmar o significado (flag de exibição no observatório ou destino de publicação).
+    access_roles: []
+
+  - column: J
+    header: Público
+    target: dataset
+    field_name: publico
+    preset: multiple_text
+    separators: [";"]
+    note: >-
+      Vocabulário ainda aberto (24 variantes, algumas de outras colunas, como `Tradução` e
+      `Estudo de caso`). Trocar por `multiple_select` quando a lista fechar.
+    access_roles: []
+
+  - column: K
+    header: Tópico
+    target: dataset
+    field_name: topico
+    preset: multiple_text
+    separators: [";"]
+    note: >-
+      Vocabulário ainda aberto (cerca de 25 valores, com duplicatas de caixa, como
+      `Materiais Didáticos`). Trocar por `multiple_select` quando a lista fechar.
+    access_roles: []
+
+  - column: L
+    header: Objetivo
+    target: dataset
+    field_name: objetivo
+    preset: markdown
+    access_roles: []
+
+  - column: M
+    header: Apoio
+    target: dataset
+    field_name: apoio
+    preset: multiple_text
+    separators: [",", ";"]
+    note: Padronizar siglas (`MPB`, `FL`, `iN`) para nomes completos.
+    access_roles: []
+
+  - column: N
+    header: Realização
+    target: dataset
+    field_name: realizacao
+    preset: multiple_text
+    separators: [";"]
+    access_roles: []
+
+  - column: O
+    header: Recorte
+    target: dataset
+    field_name: recorte
+    preset: multiple_select
+    separators: ["//"]
+    choices:
+      - value: brasil
+        label: Brasil
+      - value: estadual
+        label: Estadual
+      - value: municipal
+        label: Municipal
+    access_roles: []
+
+  - column: P
+    header: Resumo
+    target: dataset
+    field_name: notes
+    preset: markdown
+    access_roles: []
+
+  - column: Q
+    header: Tradução
+    target: dataset
+    field_name: titulo_alternativo
+    note: >-
+      A célula junta o título alternativo e os termos de busca, separados por `//`.
+      A parte antes de `//` vai para `titulo_alternativo`; a parte depois vai para `termos_busca`.
+    access_roles: []
+
+  - column: R
+    header: Relatório
+    target: resource
+    resource: relatorio
+    field_name: url
+    preset: resource_url_upload
+    access_roles: []
+
+  - column: S
+    header: Sumário
+    target: resource
+    resource: sumario_executivo
+    field_name: url
+    preset: resource_url_upload
+    access_roles: []
+
+  - column: T
+    header: Resumo
+    target: ignore
+    reason: Cabeçalho duplicado da coluna P e coluna vazia.
+
+  - column: U
+    header: Ficha site
+    target: resource
+    resource: ficha_site
+    field_name: url
+    preset: resource_url_upload
+    access_roles: []
+
+  - column: V
+    header: OBS
+    target: ignore
+    reason: Nota interna da equipe. Não é publicada.
+
+# Campos que não vêm de uma coluna própria.
+derived_fields:
+  - field_name: name
+    target: dataset
+    preset: dataset_slug
+    rule: >-
+      Slug do identificador da pesquisa. A planilha não tem identificador e tem títulos
+      duplicados, então o slug do título não é uma chave estável.
+  - field_name: owner_org
+    target: dataset
+    preset: dataset_organization
+    value: movimento-pela-base
+  - field_name: termos_busca
+    target: dataset
+    preset: multiple_text
+    source_column: Q
+    rule: Parte da coluna Q depois de `//`, sem o prefixo `Termos e Frases para Otimização de Busca:`.
+
+# Recursos de cada pesquisa. `tipo_documento` é um campo de recurso no schema CKAN.
+resources:
+  documento:
+    name: Documento
+    tipo_documento: documento
+  relatorio:
+    name: Relatório
+    tipo_documento: relatorio
+  sumario_executivo:
+    name: Sumário executivo
+    tipo_documento: sumario_executivo
+  ficha_site:
+    name: Ficha do site
+    tipo_documento: ficha_site
