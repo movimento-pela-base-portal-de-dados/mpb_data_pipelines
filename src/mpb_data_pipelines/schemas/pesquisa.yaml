@@ -9,6 +9,8 @@
 # - `dataset`: campo do conjunto de dados.
 # - `resource`: campo do recurso indicado em `resource` (veja `resources` no fim do arquivo).
 # - `ignore`: coluna que não é publicada; `reason` diz por quê.
+#
+# `access_roles`: lista de cargos que podem acessar a coluna. Lista vazia: acesso sem restrição.
 
 dataset_type: pesquisa
 
@@ -26,16 +28,7 @@ columns:
     field_name: title
     preset: title
     required: true
-
-  - column: B
-    header: Link acesso
-    target: resource
-    resource: documento
-    field_name: url
-    preset: resource_url_upload
-    note: >-
-      Cerca de 15 valores não são URL (nomes de arquivo ou `AUTOR@arquivo`).
-      Estes valores precisam de um link real antes da publicação.
+    access_roles: []
 
   - column: C
     header: Tema
@@ -49,6 +42,7 @@ columns:
         label: Implementação
       - value: revisao_politica_curricular
         label: Revisão de política curricular
+    access_roles: []
 
   - column: D
     header: Etapa
@@ -67,6 +61,7 @@ columns:
       Todas: [educacao_infantil, ensino_fundamental, ensino_medio]
       AF EF: [ensino_fundamental]
       Educação Infantil e Ensino Fundamental: [educacao_infantil, ensino_fundamental]
+    access_roles: []
 
   - column: E
     header: Palavras chave
@@ -76,6 +71,7 @@ columns:
     required: true
     separators: [",", ";", "//"]
     note: Remover o prefixo `Palavras-chave:` que aparece depois de `//` em algumas linhas.
+    access_roles: []
 
   - column: F
     header: Tipo de estudo
@@ -103,6 +99,7 @@ columns:
         label: Recomendações
       - value: traducao
         label: Tradução
+    access_roles: []
 
   - column: G
     header: Formato do arquivo
@@ -110,12 +107,14 @@ columns:
     resource: documento
     field_name: format
     preset: resource_format_autocomplete
+    access_roles: []
 
   - column: H
     header: Ano
     target: dataset
     field_name: ano
     validators: ignore_missing int_validator
+    access_roles: []
 
   - column: I
     header: Observatório
@@ -132,6 +131,7 @@ columns:
     aliases:
       Não?: [nao]
     note: Confirmar o significado (flag de exibição no observatório ou destino de publicação).
+    access_roles: []
 
   - column: J
     header: Público
@@ -142,6 +142,7 @@ columns:
     note: >-
       Vocabulário ainda aberto (24 variantes, algumas de outras colunas, como `Tradução` e
       `Estudo de caso`). Trocar por `multiple_select` quando a lista fechar.
+    access_roles: []
 
   - column: K
     header: Tópico
@@ -152,12 +153,14 @@ columns:
     note: >-
       Vocabulário ainda aberto (cerca de 25 valores, com duplicatas de caixa, como
       `Materiais Didáticos`). Trocar por `multiple_select` quando a lista fechar.
+    access_roles: []
 
   - column: L
     header: Objetivo
     target: dataset
     field_name: objetivo
     preset: markdown
+    access_roles: []
 
   - column: M
     header: Apoio
@@ -166,6 +169,7 @@ columns:
     preset: multiple_text
     separators: [",", ";"]
     note: Padronizar siglas (`MPB`, `FL`, `iN`) para nomes completos.
+    access_roles: []
 
   - column: N
     header: Realização
@@ -173,6 +177,7 @@ columns:
     field_name: realizacao
     preset: multiple_text
     separators: [";"]
+    access_roles: []
 
   - column: O
     header: Recorte
@@ -187,12 +192,14 @@ columns:
         label: Estadual
       - value: municipal
         label: Municipal
+    access_roles: []
 
   - column: P
     header: Resumo
     target: dataset
     field_name: notes
     preset: markdown
+    access_roles: []
 
   - column: Q
     header: Tradução
@@ -201,6 +208,7 @@ columns:
     note: >-
       A célula junta o título alternativo e os termos de busca, separados por `//`.
       A parte antes de `//` vai para `titulo_alternativo`; a parte depois vai para `termos_busca`.
+    access_roles: []
 
   - column: R
     header: Relatório
@@ -208,6 +216,7 @@ columns:
     resource: relatorio
     field_name: url
     preset: resource_url_upload
+    access_roles: []
 
   - column: S
     header: Sumário
@@ -215,6 +224,7 @@ columns:
     resource: sumario_executivo
     field_name: url
     preset: resource_url_upload
+    access_roles: []
 
   - column: T
     header: Resumo
@@ -227,6 +237,7 @@ columns:
     resource: ficha_site
     field_name: url
     preset: resource_url_upload
+    access_roles: []
 
   - column: V
     header: OBS
