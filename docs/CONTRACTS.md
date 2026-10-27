@@ -30,7 +30,11 @@ O bloco `roles` define os cargos e as permissões:
 - `comum`: vê os dados com login.
 - `admin`: vê e edita os dados.
 
-Cada coluna publicada tem `access_roles`, a lista de cargos que podem ver a coluna. A lista sempre inclui `admin`. O mpb-ckan aplica estas permissões.
+Cada coluna publicada e cada campo derivado tem `access_roles`, a lista de cargos que podem ver o campo. A lista sempre inclui `admin`. A lista segue a cor do cabeçalho na aba `Metadados`:
+- verde (A, C a H): `publico`, `comum` e `admin`.
+- azul (I a V): `comum` e `admin`.
+
+Um campo derivado não pode abrir a coluna de origem para outro cargo. O mpb-ckan aplica estas permissões.
 
 ## Contrato inicial de armazenamento
 - `raw/`: cópia recebida da fonte, preservada sem transformação semântica.

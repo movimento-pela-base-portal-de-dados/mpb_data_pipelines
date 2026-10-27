@@ -4,7 +4,7 @@ from string import ascii_uppercase
 import pytest
 
 from mpb_data_pipelines.schemas.mapping import MappingError, load_mapping, validate_mapping
-from tests.constants import LINK_COLUMNS, METADADOS_HEADERS
+from tests.constants import BLUE_COLUMNS, GREEN_COLUMNS, LINK_COLUMNS, METADADOS_HEADERS
 
 
 def test_pesquisa_mapping_is_valid() -> None:
@@ -86,3 +86,21 @@ def test_every_role_must_be_defined() -> None:
     roles = {name: r for name, r in mapping.roles.items() if name != "comum"}
     with pytest.raises(MappingError, match="comum"):
         validate_mapping(replace(mapping, roles=roles))
+
+
+def test_access_roles_follow_header_color() -> None:
+    mapping = load_mapping()
+    published = {c.column: set(c.access_roles) for c in mapping.columns if c.target != "ignore"}
+    assert {col for col in published if col in GREEN_COLUMNS} == GREEN_COLUMNS
+    for column, roles in published.items():
+        expected = {"comum", "admin"} if column in BLUE_COLUMNS else {"publico", "comum", "admin"}
+        assert roles == expected, column
+
+
+def test_derived_field_cannot_open_its_source_column() -> None:
+    mapping = load_mapping()
+    termos = next(d for d in mapping.derived_fields if d.field_name == "termos_busca")
+    broken = replace(termos, access_roles=("publico", "comum", "admin"))
+    derived = tuple(broken if d is termos else d for d in mapping.derived_fields)
+    with pytest.raises(MappingError, match="abre a coluna Q"):
+        validate_mapping(replace(mapping, derived_fields=derived))
