@@ -48,7 +48,41 @@ def test_required_ckan_field_must_be_mapped() -> None:
 def test_access_roles_must_not_repeat() -> None:
     mapping = load_mapping()
     title = next(c for c in mapping.columns if c.field_name == "title")
-    broken = replace(title, access_roles=("equipe_mpb", "equipe_mpb"))
+    broken = replace(title, access_roles=("publico", "admin", "admin"))
     columns = tuple(broken if c is title else c for c in mapping.columns)
     with pytest.raises(MappingError, match="access_roles"):
         validate_mapping(replace(mapping, columns=columns))
+
+
+def test_roles_permissions() -> None:
+    roles = load_mapping().roles
+    assert {name: (r.login, r.edit) for name, r in roles.items()} == {
+        "publico": (False, False),
+        "comum": (True, False),
+        "admin": (True, True),
+    }
+
+
+def test_access_roles_must_use_known_role() -> None:
+    mapping = load_mapping()
+    title = next(c for c in mapping.columns if c.field_name == "title")
+    broken = replace(title, access_roles=("diretor", "admin"))
+    columns = tuple(broken if c is title else c for c in mapping.columns)
+    with pytest.raises(MappingError, match="cargo desconhecido"):
+        validate_mapping(replace(mapping, columns=columns))
+
+
+def test_published_column_must_allow_admin() -> None:
+    mapping = load_mapping()
+    title = next(c for c in mapping.columns if c.field_name == "title")
+    broken = replace(title, access_roles=("publico", "comum"))
+    columns = tuple(broken if c is title else c for c in mapping.columns)
+    with pytest.raises(MappingError, match="sem o cargo admin"):
+        validate_mapping(replace(mapping, columns=columns))
+
+
+def test_every_role_must_be_defined() -> None:
+    mapping = load_mapping()
+    roles = {name: r for name, r in mapping.roles.items() if name != "comum"}
+    with pytest.raises(MappingError, match="comum"):
+        validate_mapping(replace(mapping, roles=roles))
