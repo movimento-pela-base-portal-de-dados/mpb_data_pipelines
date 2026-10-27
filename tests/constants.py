@@ -28,3 +28,7 @@ METADADOS_HEADERS = [
 
 # A coluna "Link acesso" fica fora do mapeamento.
 LINK_COLUMNS = {"B"}
+
+# Cor do cabeçalho na aba Metadados.
+GREEN_COLUMNS = {"A", "C", "D", "E", "F", "G", "H"}
+BLUE_COLUMNS = {"I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V"}

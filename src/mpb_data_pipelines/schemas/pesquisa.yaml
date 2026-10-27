@@ -11,7 +11,10 @@
 # - `ignore`: coluna que não é publicada; `reason` diz por quê.
 #
 # `access_roles`: lista de cargos que podem ver a coluna (veja `roles`). Toda coluna publicada
-# inclui `admin`.
+# inclui `admin`. A lista segue a cor do cabeçalho na planilha:
+# - verde (A, C a H): `publico`, `comum` e `admin`.
+# - azul (I a V): `comum` e `admin`.
+# A coluna B (laranja, `Link acesso`) fica fora do mapeamento.
 
 dataset_type: pesquisa
 
@@ -144,7 +147,7 @@ columns:
     aliases:
       Não?: [nao]
     note: Confirmar o significado (flag de exibição no observatório ou destino de publicação).
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: J
     header: Público
@@ -155,7 +158,7 @@ columns:
     note: >-
       Vocabulário ainda aberto (24 variantes, algumas de outras colunas, como `Tradução` e
       `Estudo de caso`). Trocar por `multiple_select` quando a lista fechar.
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: K
     header: Tópico
@@ -166,14 +169,14 @@ columns:
     note: >-
       Vocabulário ainda aberto (cerca de 25 valores, com duplicatas de caixa, como
       `Materiais Didáticos`). Trocar por `multiple_select` quando a lista fechar.
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: L
     header: Objetivo
     target: dataset
     field_name: objetivo
     preset: markdown
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: M
     header: Apoio
@@ -182,7 +185,7 @@ columns:
     preset: multiple_text
     separators: [",", ";"]
     note: Padronizar siglas (`MPB`, `FL`, `iN`) para nomes completos.
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: N
     header: Realização
@@ -190,7 +193,7 @@ columns:
     field_name: realizacao
     preset: multiple_text
     separators: [";"]
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: O
     header: Recorte
@@ -205,14 +208,14 @@ columns:
         label: Estadual
       - value: municipal
         label: Municipal
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: P
     header: Resumo
     target: dataset
     field_name: notes
     preset: markdown
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: Q
     header: Tradução
@@ -221,7 +224,7 @@ columns:
     note: >-
       A célula junta o título alternativo e os termos de busca, separados por `//`.
       A parte antes de `//` vai para `titulo_alternativo`; a parte depois vai para `termos_busca`.
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: R
     header: Relatório
@@ -229,7 +232,7 @@ columns:
     resource: relatorio
     field_name: url
     preset: resource_url_upload
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: S
     header: Sumário
@@ -237,7 +240,7 @@ columns:
     resource: sumario_executivo
     field_name: url
     preset: resource_url_upload
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: T
     header: Resumo
@@ -250,7 +253,7 @@ columns:
     resource: ficha_site
     field_name: url
     preset: resource_url_upload
-    access_roles: [publico, comum, admin]
+    access_roles: [comum, admin]
 
   - column: V
     header: OBS
@@ -262,6 +265,7 @@ derived_fields:
   - field_name: name
     target: dataset
     preset: dataset_slug
+    access_roles: [publico, comum, admin]
     rule: >-
       Slug do identificador da pesquisa. A planilha não tem identificador e tem títulos
       duplicados, então o slug do título não é uma chave estável.
@@ -269,10 +273,12 @@ derived_fields:
     target: dataset
     preset: dataset_organization
     value: movimento-pela-base
+    access_roles: [publico, comum, admin]
   - field_name: termos_busca
     target: dataset
     preset: multiple_text
     source_column: Q
+    access_roles: [comum, admin]
     rule: Parte da coluna Q depois de `//`, sem o prefixo `Termos e Frases para Otimização de Busca:`.
 
 # Recursos de cada pesquisa. `tipo_documento` é um campo de recurso no schema CKAN.
