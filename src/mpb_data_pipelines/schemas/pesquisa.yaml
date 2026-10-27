@@ -10,7 +10,8 @@
 # - `resource`: campo do recurso indicado em `resource` (veja `resources` no fim do arquivo).
 # - `ignore`: coluna que não é publicada; `reason` diz por quê.
 #
-# `access_roles`: lista de cargos que podem acessar a coluna. Lista vazia: acesso sem restrição.
+# `access_roles`: lista de cargos que podem ver a coluna (veja `roles`). Toda coluna publicada
+# inclui `admin`.
 
 dataset_type: pesquisa
 
@@ -21,6 +22,18 @@ source:
 # Valores que a planilha usa para "sem valor" (resultado de VLOOKUP sem match ou marcação manual).
 null_values: ["0", "-", "N/a", "#N/A"]
 
+# Cargos e permissões. `login`: o cargo exige login. `edit`: o cargo edita os dados.
+roles:
+  publico:
+    login: false
+    edit: false
+  comum:
+    login: true
+    edit: false
+  admin:
+    login: true
+    edit: true
+
 columns:
   - column: A
     header: Título da Pesquisa
@@ -28,7 +41,7 @@ columns:
     field_name: title
     preset: title
     required: true
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: C
     header: Tema
@@ -42,7 +55,7 @@ columns:
         label: Implementação
       - value: revisao_politica_curricular
         label: Revisão de política curricular
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: D
     header: Etapa
@@ -61,7 +74,7 @@ columns:
       Todas: [educacao_infantil, ensino_fundamental, ensino_medio]
       AF EF: [ensino_fundamental]
       Educação Infantil e Ensino Fundamental: [educacao_infantil, ensino_fundamental]
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: E
     header: Palavras chave
@@ -71,7 +84,7 @@ columns:
     required: true
     separators: [",", ";", "//"]
     note: Remover o prefixo `Palavras-chave:` que aparece depois de `//` em algumas linhas.
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: F
     header: Tipo de estudo
@@ -99,7 +112,7 @@ columns:
         label: Recomendações
       - value: traducao
         label: Tradução
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: G
     header: Formato do arquivo
@@ -107,14 +120,14 @@ columns:
     resource: documento
     field_name: format
     preset: resource_format_autocomplete
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: H
     header: Ano
     target: dataset
     field_name: ano
     validators: ignore_missing int_validator
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: I
     header: Observatório
@@ -131,7 +144,7 @@ columns:
     aliases:
       Não?: [nao]
     note: Confirmar o significado (flag de exibição no observatório ou destino de publicação).
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: J
     header: Público
@@ -142,7 +155,7 @@ columns:
     note: >-
       Vocabulário ainda aberto (24 variantes, algumas de outras colunas, como `Tradução` e
       `Estudo de caso`). Trocar por `multiple_select` quando a lista fechar.
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: K
     header: Tópico
@@ -153,14 +166,14 @@ columns:
     note: >-
       Vocabulário ainda aberto (cerca de 25 valores, com duplicatas de caixa, como
       `Materiais Didáticos`). Trocar por `multiple_select` quando a lista fechar.
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: L
     header: Objetivo
     target: dataset
     field_name: objetivo
     preset: markdown
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: M
     header: Apoio
@@ -169,7 +182,7 @@ columns:
     preset: multiple_text
     separators: [",", ";"]
     note: Padronizar siglas (`MPB`, `FL`, `iN`) para nomes completos.
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: N
     header: Realização
@@ -177,7 +190,7 @@ columns:
     field_name: realizacao
     preset: multiple_text
     separators: [";"]
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: O
     header: Recorte
@@ -192,14 +205,14 @@ columns:
         label: Estadual
       - value: municipal
         label: Municipal
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: P
     header: Resumo
     target: dataset
     field_name: notes
     preset: markdown
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: Q
     header: Tradução
@@ -208,7 +221,7 @@ columns:
     note: >-
       A célula junta o título alternativo e os termos de busca, separados por `//`.
       A parte antes de `//` vai para `titulo_alternativo`; a parte depois vai para `termos_busca`.
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: R
     header: Relatório
@@ -216,7 +229,7 @@ columns:
     resource: relatorio
     field_name: url
     preset: resource_url_upload
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: S
     header: Sumário
@@ -224,7 +237,7 @@ columns:
     resource: sumario_executivo
     field_name: url
     preset: resource_url_upload
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: T
     header: Resumo
@@ -237,7 +250,7 @@ columns:
     resource: ficha_site
     field_name: url
     preset: resource_url_upload
-    access_roles: []
+    access_roles: [publico, comum, admin]
 
   - column: V
     header: OBS

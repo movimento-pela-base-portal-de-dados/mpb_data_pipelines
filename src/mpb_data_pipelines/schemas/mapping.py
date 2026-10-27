@@ -9,6 +9,8 @@ from mpb_data_pipelines.schemas.constants import (
     CHOICE_PRESETS,
     CKAN_REQUIRED_DATASET_FIELDS,
     PESQUISA_MAPPING_FILE,
+    ROLE_ADMIN,
+    ROLES,
     TARGET_DATASET,
     TARGET_IGNORE,
     TARGET_RESOURCE,
@@ -39,6 +41,13 @@ class ColumnMapping:
 
 
 @dataclass(frozen=True)
+class Role:
+    name: str
+    login: bool
+    edit: bool
+
+
+@dataclass(frozen=True)
 class DerivedField:
     field_name: str
     target: str
@@ -57,6 +66,7 @@ class SchemaMapping:
     columns: tuple[ColumnMapping, ...]
     derived_fields: tuple[DerivedField, ...]
     resources: dict[str, dict[str, str]]
+    roles: dict[str, Role] = field(default_factory=dict)
 
     def dataset_field_names(self) -> set[str]:
         names = {c.field_name for c in self.columns if c.target == TARGET_DATASET}
@@ -88,10 +98,13 @@ def validate_mapping(mapping: SchemaMapping) -> None:
     if duplicated := {c for c in columns if columns.count(c) > 1}:
         raise MappingError(f"colunas repetidas: {sorted(duplicated)}")
 
+    if missing := set(ROLES) - set(mapping.roles):
+        raise MappingError(f"cargos sem definição em roles: {sorted(missing)}")
+
     targets: set[tuple[str, str | None, str | None]] = set()
     for c in mapping.columns:
-        if not all(isinstance(role, str) and role for role in c.access_roles):
-            raise MappingError(f"coluna {c.column}: access_roles aceita só nomes de cargo")
+        if unknown := set(c.access_roles) - set(mapping.roles):
+            raise MappingError(f"coluna {c.column}: access_roles com cargo desconhecido {unknown}")
         if len(set(c.access_roles)) != len(c.access_roles):
             raise MappingError(f"coluna {c.column}: access_roles com cargo repetido")
         if c.target not in TARGETS:
@@ -100,6 +113,8 @@ def validate_mapping(mapping: SchemaMapping) -> None:
             if not c.reason:
                 raise MappingError(f"coluna {c.column}: destino ignore sem reason")
             continue
+        if ROLE_ADMIN not in c.access_roles:
+            raise MappingError(f"coluna {c.column}: access_roles sem o cargo {ROLE_ADMIN}")
         if not c.field_name:
             raise MappingError(f"coluna {c.column}: sem field_name")
         if c.target == TARGET_RESOURCE and c.resource not in mapping.resources:
@@ -131,6 +146,7 @@ def load_mapping(path: Path = PESQUISA_MAPPING_FILE) -> SchemaMapping:
         columns=tuple(_parse_column(column) for column in raw["columns"]),
         derived_fields=tuple(DerivedField(**d) for d in raw.get("derived_fields") or ()),
         resources=raw.get("resources") or {},
+        roles={name: Role(name=name, **perms) for name, perms in (raw.get("roles") or {}).items()},
     )
     validate_mapping(mapping)
     return mapping
