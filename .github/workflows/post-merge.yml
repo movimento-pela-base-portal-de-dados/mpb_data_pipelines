@@ -1,0 +1,49 @@
+name: Post merge
+
+on:
+  push:
+    branches: [staging, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-merge-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    # id-token: write é repassado ao job Image (OIDC para o ECR).
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/_checks.yml
+
+  # Só na staging: na main, o deploy real é feito pelo cd.yml.
+  deploy:
+    name: Deploy
+    needs: checks
+    if: github.ref_name == 'staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: staging
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: List build artifact
+        run: ls -l dist/
+      # TODO: substituir pelo deploy real quando o destino existir (ver docs/ORCHESTRATION.md).
+      - name: Deploy placeholder
+        run: |
+          {
+            echo "## Deploy (placeholder)"
+            echo ""
+            echo "- Ambiente: \`staging\`"
+            echo "- Commit: \`$GITHUB_SHA\`"
+            echo "- Artefatos:"
+            for file in dist/*; do echo "  - \`$(basename "$file")\`"; done
+            echo ""
+            echo "Nenhum destino de deploy configurado nesta etapa."
+          } >> "$GITHUB_STEP_SUMMARY"

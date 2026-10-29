@@ -1,0 +1,62 @@
+# Serviços Prefect da EC2 do orquestrador: banco, API/UI e worker Docker.
+name: mpb-prefect
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?defina em orchestrator/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina em orchestrator/.env}
+      POSTGRES_DB: ${POSTGRES_DB:?defina em orchestrator/.env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prefect-server:
+    image: prefecthq/prefect:3.8.8-python3.11
+    restart: unless-stopped
+    command: prefect server start --host 0.0.0.0
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      PREFECT_SERVER_API_AUTH_STRING: ${PREFECT_AUTH_STRING:?defina em orchestrator/.env}
+      PREFECT_UI_API_URL: ${PREFECT_UI_API_URL:-http://127.0.0.1:4200/api}
+    ports:
+      # Sem exposição pública: acesso por port forwarding do SSM.
+      - "127.0.0.1:4200:4200"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4200/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: worker.Dockerfile
+    restart: unless-stopped
+    command: prefect worker start --pool mpb-docker --type docker
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api
+      PREFECT_API_AUTH_STRING: ${PREFECT_AUTH_STRING}
+      AWS_REGION: ${AWS_REGION}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      prefect-server:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+
+networks:
+  default:
+    # Nome fixo: os containers dos flow runs entram nesta rede (ver prefect.yaml).
+    name: mpb-prefect

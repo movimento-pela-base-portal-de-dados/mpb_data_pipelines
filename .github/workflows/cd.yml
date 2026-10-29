@@ -1,0 +1,125 @@
+name: CD
+
+# Implanta na EC2 do orquestrador a imagem testada no PR (tag tree-<hash>).
+# Desativado enquanto a variável AWS_ROLE_CD_ARN não existe.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit, branch ou tag a implantar (redeploy ou rollback manual)
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Resolve image
+    if: vars.AWS_ROLE_CD_ARN != '' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      sha: ${{ steps.meta.outputs.sha }}
+      tag: ${{ steps.meta.outputs.tag }}
+      found: ${{ steps.lookup.outputs.found }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Compute commit and image tag
+        id: meta
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tag=tree-$(git rev-parse 'HEAD^{tree}')" >> "$GITHUB_OUTPUT"
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_CD_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Look up image in ECR
+        id: lookup
+        env:
+          ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+          TAG: ${{ steps.meta.outputs.tag }}
+        run: |
+          if aws ecr describe-images --repository-name "${ECR_REPOSITORY#*/}" \
+              --image-ids imageTag="$TAG" > /dev/null 2>&1; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::$TAG não está no ECR; a imagem será gerada no CD"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build fallback
+    needs: resolve
+    if: needs.resolve.outputs.found != 'true'
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/image.yml
+    with:
+      push: true
+      aws-role-arn: ${{ vars.AWS_ROLE_CD_ARN }}
+      ref: ${{ needs.resolve.outputs.sha }}
+
+  deploy:
+    name: Deploy and post-deploy checks
+    needs: [resolve, build]
+    if: >-
+      always() && needs.resolve.result == 'success'
+      && contains(fromJSON('["success", "skipped"]'), needs.build.result)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      ORCHESTRATOR_INSTANCE_ID: ${{ vars.ORCHESTRATOR_INSTANCE_ID }}
+      SHA: ${{ needs.resolve.outputs.sha }}
+      IMAGE: ${{ vars.ECR_REPOSITORY }}:${{ needs.resolve.outputs.tag }}
+      REPO_DIR: /opt/mpb_data_pipelines
+      LAST_GOOD: /var/lib/mpb-prefect/last-good
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_CD_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Deploy
+        id: deploy
+        run: |
+          .github/scripts/ssm-run.sh deploy "cd $REPO_DIR \
+            && git fetch --quiet origin \
+            && git checkout --quiet --detach $SHA \
+            && AWS_REGION=$AWS_REGION orchestrator/bin/deploy.sh $IMAGE $SHA"
+      - name: Post-deploy checks
+        id: check
+        run: .github/scripts/ssm-run.sh check "cd $REPO_DIR && orchestrator/bin/check.sh $IMAGE"
+      - name: Mark release as last-good
+        run: |
+          .github/scripts/ssm-run.sh mark-last-good \
+            "mkdir -p $(dirname "$LAST_GOOD") && echo '$SHA $IMAGE' > $LAST_GOOD"
+      - name: Roll back to last-good
+        if: failure() && (steps.deploy.outcome == 'failure' || steps.check.outcome == 'failure')
+        run: |
+          .github/scripts/ssm-run.sh rollback "\
+            test -s $LAST_GOOD || { echo 'nenhuma versão last-good registrada'; exit 1; }; \
+            read -r sha image < $LAST_GOOD; \
+            echo \"rollback para \$sha\"; \
+            cd $REPO_DIR; \
+            git checkout --quiet --detach \$sha; \
+            AWS_REGION=$AWS_REGION orchestrator/bin/deploy.sh \$image \$sha; \
+            orchestrator/bin/check.sh \$image"
