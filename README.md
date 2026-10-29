@@ -8,10 +8,9 @@ Fluxo esperado: fonte -> extração -> `S3/raw` -> validação/transformação -
 A aplicação CKAN possui ciclo de vida independente. Este repositório não deve conter infraestrutura AWS nem código da aplicação CKAN.
 
 ## Estrutura
-- `src/mpb_data_pipelines/connectors`: aquisição por API, arquivos, web e outras fontes.
-- `transforms`: limpeza, padronização e enriquecimento.
-- `quality`: regras e validações de qualidade.
-- `publish`: publicação em S3 e integração com a API CKAN.
+- `src/mpb_data_pipelines/flows/<dataset>/flow.py`: flow Prefect de cada fonte de dados, com
+  extração, transformação e envio às camadas do S3.
+- `src/mpb_data_pipelines/s3.py`: envio de arquivos às camadas `raw`, `processed` e `published`.
 - `tests`: testes automatizados.
 - `docs`: contratos e decisões técnicas.
 
@@ -39,5 +38,27 @@ Para executar manualmente: `uv run pre-commit run --all-files`.
 O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
 `CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates.
 
-Prefect é o padrão futuro de orquestração adotado pela Base dos Dados, conforme
-`docs/ORCHESTRATION.md`. Ele não é instalado nem configurado nesta etapa.
+## Orquestração com Prefect
+
+Os pipelines são flows [Prefect 3](https://docs.prefect.io/v3/), conforme
+`docs/ORCHESTRATION.md`. Cada fonte de dados tem seu pacote em
+`src/mpb_data_pipelines/flows/<dataset>/`, com o flow na função `main` de `flow.py`;
+`flows/dataset_exemplo/` é o modelo genérico (download -> `raw` -> transformação ->
+`processed` -> `published`) a ser copiado para novas fontes.
+
+Arquivos locais ficam em `<dataset>/<tabela>/`, relativo ao diretório de execução.
+`s3.upload_file(s3.Layer.RAW, "<dataset>/<tabela>/<arquivo>")`, em `mpb_data_pipelines/s3.py`, envia o
+arquivo para a chave `raw/<dataset>/<tabela>/<arquivo>`. O bucket é lido de
+`MPB_S3_BUCKET` e as credenciais seguem a cadeia padrão do boto3.
+
+Para executar um flow localmente (sem servidor, o Prefect sobe um backend temporário):
+
+```bash
+export MPB_S3_BUCKET=<bucket>
+uv run python -c "
+from mpb_data_pipelines.flows.dataset_exemplo.flow import main
+main(url='https://exemplo.org/dados.csv')
+"
+```
+
+Os testes usam `moto` para simular o S3 e não acessam a AWS.

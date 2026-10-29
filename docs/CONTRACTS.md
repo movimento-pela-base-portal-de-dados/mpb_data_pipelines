@@ -11,4 +11,8 @@ A publicação de catálogo ocorre pela API CKAN. O pipeline envia metadados e r
 - `processed/`: dados validados, padronizados e tratados.
 - `published/`: artefatos prontos para disponibilização.
 
+Chaves seguem `<camada>/<dataset>/<tabela>/<arquivo>`, espelhando o caminho local
+do arquivo (ver `upload_file` em `src/mpb_data_pipelines/s3.py`). O bucket é informado pela
+variável `MPB_S3_BUCKET`.
+
 Convenções detalhadas de paths, schemas, particionamento e versionamento serão definidas conforme os primeiros conjuntos de dados forem implementados.
