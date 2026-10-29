@@ -1,0 +1,9 @@
+"""Constantes do pacote ops."""
+
+WORK_POOL = "mpb-docker"
+HEALTHCHECK_DEPLOYMENT = "healthcheck/healthcheck"
+
+DEFAULT_PREFECT_FILE = "prefect.yaml"
+DEFAULT_WORKER_WAIT_SECONDS = 120.0
+DEFAULT_RUN_TIMEOUT_SECONDS = 600.0
+WORK_POOL_POLL_INTERVAL_SECONDS = 5

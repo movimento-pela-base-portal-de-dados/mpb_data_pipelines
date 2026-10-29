@@ -10,7 +10,10 @@ A aplicação CKAN possui ciclo de vida independente. Este repositório não dev
 ## Estrutura
 - `src/mpb_data_pipelines/flows/<dataset>/flow.py`: flow Prefect de cada fonte de dados, com
   extração, transformação e envio às camadas do S3.
+- `src/mpb_data_pipelines/flows/healthcheck.py`: flow usado pelas verificações do CI/CD.
 - `src/mpb_data_pipelines/s3.py`: envio de arquivos às camadas `raw`, `processed` e `published`.
+- `src/mpb_data_pipelines/ops`: verificações antes e depois do deploy.
+- `orchestrator`: Docker Compose da EC2 do orquestrador e passo a passo de operação.
 - `tests`: testes automatizados.
 - `docs`: contratos e decisões técnicas.
 
@@ -35,13 +38,17 @@ Para executar manualmente: `uv run pre-commit run --all-files`.
 
 ## Preparação de engenharia
 
-O desenvolvimento segue branches curtas e Pull Requests para `main`. Consulte
-`CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates.
+O desenvolvimento segue branches curtas com Pull Requests para `staging`. A
+promoção para produção é um Pull Request de `staging` para `main`. Consulte
+`CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates e o
+fluxo de CI/CD.
 
 ## Orquestração com Prefect
 
-Os pipelines são flows [Prefect 3](https://docs.prefect.io/v3/), conforme
-`docs/ORCHESTRATION.md`. Cada fonte de dados tem seu pacote em
+Os pipelines são flows [Prefect 3](https://docs.prefect.io/v3/) e executam no
+Prefect self-hosted, na EC2 do orquestrador, com um worker Docker. Consulte
+`docs/ORCHESTRATION.md` para a estrutura e `orchestrator/README.md` para a
+operação e o CI/CD. Cada fonte de dados tem seu pacote em
 `src/mpb_data_pipelines/flows/<dataset>/`, com o flow na função `main` de `flow.py`;
 `flows/dataset_exemplo/` é o modelo genérico (download -> `raw` -> transformação ->
 `processed` -> `published`) a ser copiado para novas fontes.
