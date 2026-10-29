@@ -15,7 +15,7 @@ concurrency:
 jobs:
   source-branch:
     name: Source branch policy
-    if: github.base_ref == 'main'
+    if: github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
