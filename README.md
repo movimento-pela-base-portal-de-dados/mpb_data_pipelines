@@ -12,6 +12,7 @@ A aplicação CKAN possui ciclo de vida independente. Este repositório não dev
   extração, transformação e envio às camadas do S3.
 - `src/mpb_data_pipelines/flows/healthcheck.py`: flow usado pelas verificações do CI/CD.
 - `src/mpb_data_pipelines/s3.py`: envio de arquivos às camadas `raw`, `processed` e `published`.
+- `src/mpb_data_pipelines/schemas`: mapeamentos entre colunas das fontes e campos do schema CKAN.
 - `src/mpb_data_pipelines/ops`: verificações antes e depois do deploy.
 - `orchestrator`: Docker Compose da EC2 do orquestrador e passo a passo de operação.
 - `tests`: testes automatizados.
