@@ -8,12 +8,13 @@ Fluxo esperado: fonte -> extração -> `S3/raw` -> validação/transformação -
 A aplicação CKAN possui ciclo de vida independente. Este repositório não deve conter infraestrutura AWS nem código da aplicação CKAN.
 
 ## Estrutura
-- `src/mpb_data_pipelines/flows`: flows e tasks Prefect (apenas orquestração).
-- `src/mpb_data_pipelines/connectors`: aquisição por API, arquivos, web e outras fontes.
-- `transforms`: limpeza, padronização e enriquecimento.
-- `quality`: regras e validações de qualidade.
-- `publish`: publicação em S3 e integração com a API CKAN.
-- `schemas`: mapeamentos entre colunas das fontes e campos do schema CKAN.
+- `src/mpb_data_pipelines/flows/<dataset>/flow.py`: flow Prefect de cada fonte de dados, com
+  extração, transformação e envio às camadas do S3.
+- `src/mpb_data_pipelines/flows/healthcheck.py`: flow usado pelas verificações do CI/CD.
+- `src/mpb_data_pipelines/s3.py`: envio de arquivos às camadas `raw`, `processed` e `published`.
+- `src/mpb_data_pipelines/schemas`: mapeamentos entre colunas das fontes e campos do schema CKAN.
+- `src/mpb_data_pipelines/ops`: verificações antes e depois do deploy.
+- `orchestrator`: Docker Compose da EC2 do orquestrador e passo a passo de operação.
 - `tests`: testes automatizados.
 - `docs`: contratos e decisões técnicas.
 
@@ -43,8 +44,29 @@ promoção para produção é um Pull Request de `staging` para `main`. Consulte
 `CONTRIBUTING.md` e `.github/BRANCH_PROTECTION.md` para os quality gates e o
 fluxo de CI/CD.
 
-## Orquestração
+## Orquestração com Prefect
 
-As pipelines executam no Prefect 3 self-hosted, na EC2 do orquestrador, com um
-worker Docker. Consulte `docs/ORCHESTRATION.md` para a estrutura e
-`orchestrator/README.md` para a operação e o CI/CD. Ainda não há flows de dados implementados.
+Os pipelines são flows [Prefect 3](https://docs.prefect.io/v3/) e executam no
+Prefect self-hosted, na EC2 do orquestrador, com um worker Docker. Consulte
+`docs/ORCHESTRATION.md` para a estrutura e `orchestrator/README.md` para a
+operação e o CI/CD. Cada fonte de dados tem seu pacote em
+`src/mpb_data_pipelines/flows/<dataset>/`, com o flow na função `main` de `flow.py`;
+`flows/dataset_exemplo/` é o modelo genérico (download -> `raw` -> transformação ->
+`processed` -> `published`) a ser copiado para novas fontes.
+
+Arquivos locais ficam em `<dataset>/<tabela>/`, relativo ao diretório de execução.
+`s3.upload_file(s3.Layer.RAW, "<dataset>/<tabela>/<arquivo>")`, em `mpb_data_pipelines/s3.py`, envia o
+arquivo para a chave `raw/<dataset>/<tabela>/<arquivo>`. O bucket é lido de
+`MPB_S3_BUCKET` e as credenciais seguem a cadeia padrão do boto3.
+
+Para executar um flow localmente (sem servidor, o Prefect sobe um backend temporário):
+
+```bash
+export MPB_S3_BUCKET=<bucket>
+uv run python -c "
+from mpb_data_pipelines.flows.dataset_exemplo.flow import main
+main(url='https://exemplo.org/dados.csv')
+"
+```
+
+Os testes usam `moto` para simular o S3 e não acessam a AWS.
